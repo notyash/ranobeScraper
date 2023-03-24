@@ -1,8 +1,8 @@
 import time
 from difflib import get_close_matches
 
-from novels import NovelScraper
-from utils import undetected_request, save_data
+from scripts.novels import NovelScraper
+from scripts.utils import undetected_request, save_data
 
 
 class DataScraper(NovelScraper):
@@ -10,11 +10,16 @@ class DataScraper(NovelScraper):
         super().__init__()
 
     def take_input(self):
-        name = input("Enter Novel Name: ")
-        all_novels = list(self.data.keys())
-        novel = get_close_matches(name, all_novels)[0]
+        while True:
+            name = input("Enter Novel Name: ")
+            all_novels = list(self.data.keys())
+            try:
+                novel = get_close_matches(name, all_novels)[0]
+            except IndexError:
+                print('Invalid name. Try Again..')
+                continue
 
-        return self.data[novel]['link'], novel
+            return self.data[novel]['link'], novel
 
     @staticmethod
     def get_title(soup):
@@ -66,7 +71,7 @@ class DataScraper(NovelScraper):
         print(f'\nGetting Data For {novel}..')
         if self.data[novel].get('Title') is not None:
             print("Data already available.")
-            print(f"\nTotal Time Taken For Data:{time.time() - start_time}\n")
+            print(f"\nTotal Time Taken For Data: {time.time() - start_time}\n")
             return novel
         soup = undetected_request(link)
         self.data[novel]['Title'] = self.get_title(soup)
@@ -78,7 +83,7 @@ class DataScraper(NovelScraper):
 
         save_data(self)
         print('Data Scraped.')
-        print(f"\nTotal Time Taken For Data:{time.time() - start_time}\n")
+        print(f"\nTotal Time Taken For Data: {time.time() - start_time}\n")
 
         return novel
 

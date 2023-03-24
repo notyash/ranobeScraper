@@ -3,13 +3,12 @@ import os
 import time
 from concurrent.futures import ThreadPoolExecutor
 
-from utils import make_request, get_total_pages, save_data
+from scripts.utils import make_request, get_total_pages, save_data
 
 
 class NovelScraper:
     def __init__(self):
-        os.chdir('../Output')
-        with open('data.json', 'r') as file:
+        with open('data/data.json', 'r') as file:
             self.data = json.loads(file.read())
 
     @staticmethod

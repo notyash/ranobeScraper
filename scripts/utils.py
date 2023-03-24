@@ -67,6 +67,6 @@ def get_total_pages(novels, util):
 
 
 def save_data(self):
-    filename = os.path.join(os.getcwd(), "data.json")
+    filename = os.path.join(os.getcwd(), "./data/data.json")
     with open(filename, 'w') as f:
         json.dump(self.data, f, indent=4)

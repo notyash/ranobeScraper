@@ -10,8 +10,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
 
-from data import DataScraper
-from utils import undetected_request, make_request, get_total_pages, save_data
+from scripts.data import DataScraper
+from scripts.utils import undetected_request, make_request, get_total_pages, save_data
 
 
 class ChapterScraper(DataScraper):
