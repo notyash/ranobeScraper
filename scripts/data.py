@@ -9,17 +9,16 @@ class DataScraper(NovelScraper):
     def __init__(self):
         super().__init__()
 
-    def take_input(self):
-        while True:
-            name = input("Enter Novel Name: ")
-            all_novels = list(self.data.keys())
-            try:
-                novel = get_close_matches(name, all_novels)[0]
-            except IndexError:
-                print('Invalid name. Try Again..')
-                continue
+    def take_input(self, title):
+        name = title
+        all_novels = list(self.data.keys())
+        try:
+            novel = get_close_matches(name, all_novels)[0]
+        except IndexError:
+            print('Invalid name.')
+            return False, False
 
-            return self.data[novel]['link'], novel
+        return self.data[novel]['link'], novel
 
     @staticmethod
     def get_title(soup):
@@ -58,16 +57,18 @@ class DataScraper(NovelScraper):
     @staticmethod
     def get_details(soup):
 
-        details = list()
+        details = dict()
         for detail in soup.select('div.r-fullstory-spec ul li'):
-            details.append(detail.get_text(strip=True).encode("ascii", "ignore").decode())
+            keyValue = detail.get_text(strip=True).encode("ascii", "ignore").decode().split(':')
+            details[keyValue[0].replace(' ', '_')] = keyValue[1]
 
         return details
 
-    def find_data(self):
-        link, novel = self.take_input()
+    def find_data(self, title):
+        link, novel = self.take_input(title)
+        if not novel:
+            return False
         start_time = time.time()
-
         print(f'\nGetting Data For {novel}..')
         if self.data[novel].get('Title') is not None:
             print("Data already available.")
@@ -77,7 +78,7 @@ class DataScraper(NovelScraper):
         self.data[novel]['Title'] = self.get_title(soup)
         self.data[novel]['Description'] = self.get_description(soup)
         self.data[novel]['Rating'] = self.get_rating(soup)
-        self.data[novel]['Image Link'] = self.get_image_link(soup)
+        self.data[novel]['ImageLink'] = self.get_image_link(soup)
         self.data[novel]['Genres'] = self.get_genres(soup)
         self.data[novel]['Details'] = self.get_details(soup)
 
@@ -88,7 +89,7 @@ class DataScraper(NovelScraper):
         return novel
 
 
-def run_data_scraper():
+def run_data_scraper(title):
     scraper = DataScraper()
-    novel = scraper.find_data()
+    novel = scraper.find_data(title)
     return novel

@@ -1,5 +1,4 @@
 import json
-import os
 import time
 from concurrent.futures import ThreadPoolExecutor
 
@@ -75,7 +74,3 @@ class NovelScraper:
 def run_novel_scraper():
     scraper = NovelScraper()
     scraper.find_novels()
-
-
-# 376.31 thread test 1
-# 346.31 thread test 2

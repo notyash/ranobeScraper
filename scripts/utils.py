@@ -17,6 +17,7 @@ def undetected_request(link):
     driver.implicitly_wait(10)
     driver.find_element(uc.By.CSS_SELECTOR, value='div[style="cursor: pointer;"]').click()
     time.sleep(2.5)
+
     html = driver.page_source
     driver.quit()
     soup = BeautifulSoup(html, 'lxml')

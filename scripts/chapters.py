@@ -1,4 +1,5 @@
 import json
+import re
 import time
 from concurrent.futures import ThreadPoolExecutor
 from itertools import repeat
@@ -11,14 +12,15 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
 
 from scripts.data import DataScraper
-from scripts.utils import undetected_request, make_request, get_total_pages, save_data
+from scripts.utils import make_request, get_total_pages, save_data
 
 
 class ChapterScraper(DataScraper):
     def __init__(self):
         super().__init__()
 
-    def generateChapterLinks(self, name, start_url):
+    @staticmethod
+    def generateChapterLinks(start_url):
         options = uc.ChromeOptions()
         options.headless = True
         driver = uc.Chrome(options=options)
@@ -29,7 +31,6 @@ class ChapterScraper(DataScraper):
         time.sleep(2.5)
 
         totalPages = get_total_pages(False, driver)
-
         chapters = dict()
         currentPage = 0
         while currentPage < totalPages:
@@ -48,20 +49,11 @@ class ChapterScraper(DataScraper):
             except TimeoutException:
                 break
         driver.quit()
-        self.data[name]['Chapter Links'] = chapters
-        self.data[name]['Total Chapters'] = len(chapters)
-
-    def get_total_chapters(self, name):
-        soup = undetected_request(self.data[name]['Chapter Link'])
-        try:
-            total_chapters = int(soup.select_one('h6.title').text.split(':')[0].split(' ')[-1])
-        except ValueError:
-            total_chapters = int(float(soup.select_one('h6.title').text.split(' ')[-1]))
-
-        return total_chapters
+        return chapters, len(chapters)
 
     def newChaptersFound(self, name, start_url):
-        new_total_chapters = self.get_total_chapters(name)
+        links, new_total_chapters = self.generateChapterLinks(start_url)
+
         if self.data[name].get('Total Chapters') is not None:
             old_total_chapters = self.data[name]['Total Chapters']
             if old_total_chapters >= new_total_chapters:
@@ -73,15 +65,28 @@ class ChapterScraper(DataScraper):
                 newChapters = new_total_chapters - old_total_chapters
                 return True, newChapters
         else:
-            self.generateChapterLinks(name, start_url)
+            self.data[name]['Chapter Links'] = links
+            self.data[name]['Total Chapters'] = new_total_chapters
             return True, None
 
     def save_chapters(self, soup, chapter, name):
         body = ''
         for p in soup.select('div#arrticle p'):
             body += p.text + '\n\n'
+        try:
+            chapterNumber = re.findall(r'[\d+\.\d+|\d]+', chapter)
+            if not chapterNumber:
+                self.data[name]['Chapters'].append({'title': chapter, chapter: body})
+            else:
+                self.data[name]['Chapters'].append({'title': chapter, f'Chapter{chapterNumber[0]}': body})
 
-        self.data[name][chapter] = body
+        except Exception:
+            self.data[name]['Chapters'] = list()
+            chapterNumber = re.findall(r'[\d+\.\d+|\d]+', chapter)
+            if not chapterNumber:
+                self.data[name]['Chapters'].append({'title': chapter, chapter: body})
+            else:
+                self.data[name]['Chapters'].append({'title': chapter, f'Chapter{chapterNumber[0]}': body})
 
     def fetch_chapters(self, name, link):
         soup = make_request(link[1])
@@ -97,7 +102,7 @@ class ChapterScraper(DataScraper):
         true, chaptersFound = scraper.newChaptersFound(name, start_url)
         if not true:
             print(f"\nTotal Time Taken For Chapters:{time.time() - start_time}\n")
-            return
+            return self.data[name]
 
         if chaptersFound is not None:
             links = list(self.data[name]['Chapter Links'].items())[:chaptersFound]
@@ -106,7 +111,7 @@ class ChapterScraper(DataScraper):
             save_data(self)
             print('Chapters Scraped.')
             print(f"\nTotal Time Taken For Chapters:{time.time() - start_time}\n")
-            return
+            return self.data[name]
 
         links = list(self.data[name]['Chapter Links'].items())
         with ThreadPoolExecutor(max_workers=8) as executor:
@@ -115,8 +120,10 @@ class ChapterScraper(DataScraper):
 
         print('Chapters Scraped.')
         print(f"\nTotal Time Taken For Chapters:{time.time() - start_time}\n")
+        return self.data[name]
 
 
 def run_chapter_scraper(name):
     scraper = ChapterScraper()
-    scraper.find_chapters(scraper, name)
+    data = scraper.find_chapters(scraper, name)
+    return data
