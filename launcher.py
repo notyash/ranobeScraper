@@ -11,18 +11,18 @@ from scripts.novels import run_novel_scraper
 app = FastAPI()
 
 
-p = subprocess.Popen([sys.executable, r'FlareSolverr/src/flaresolverr.py'],
-                     stdout=subprocess.DEVNULL,
-                     stderr=subprocess.STDOUT,)
-
-
 @app.get("/novel")
 def main(title):
+    p = subprocess.Popen([sys.executable, r'FlareSolverr/src/flaresolverr.py'],
+                         stdout=subprocess.DEVNULL,
+                         stderr=subprocess.STDOUT, )
+
     run_novel_scraper()
     name = run_data_scraper(title)
     if not name:
         return 'Invalid Name'
     data = run_chapter_scraper(name)
+    p.terminate()
     return data
 
 
