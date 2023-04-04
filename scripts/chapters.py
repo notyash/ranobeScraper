@@ -36,7 +36,9 @@ class ChapterScraper(DataScraper):
         while currentPage < totalPages:
             soup = BeautifulSoup(driver.page_source, 'lxml')
             scripts = soup.find_all('script')
-            dictionary_text = str(scripts[6]).replace('<script>window.__DATA__ = ', '').replace('</script>', '')
+            script_index = 3  # changes to 3 from 7 due to ranobes.net changed to ranobes.top
+            dictionary_text = str(scripts[script_index]).replace('<script>window.__DATA__ = ', '').replace('</script>',
+                                                                                                           '')
             data = json.loads(dictionary_text)
             for i in range(len(data['chapters'])):
                 chapters[data['chapters'][i]['title']] = data['chapters'][i]['link']

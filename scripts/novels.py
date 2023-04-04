@@ -14,7 +14,7 @@ class NovelScraper:
     def generate_page_links(start_page, new_pages):
         links = []
         for page in range(start_page, start_page + new_pages + 1):
-            links.append(f"https://ranobes.net/novels/page/{page}/")
+            links.append(f"https://ranobes.top/novels/page/{page}/")
 
         return links
 
