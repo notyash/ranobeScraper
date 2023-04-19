@@ -19,8 +19,7 @@ class ChapterScraper(DataScraper):
     def __init__(self):
         super().__init__()
 
-    @staticmethod
-    def generateChapterLinks(start_url):
+    def generateChapterLinks(self, start_url):
         options = uc.ChromeOptions()
         options.headless = True
         driver = uc.Chrome(options=options)
@@ -94,7 +93,7 @@ class ChapterScraper(DataScraper):
         soup = make_request(link[1])
         chapter = link[0]
         self.save_chapters(soup, chapter, name)
-
+        save_data(self)
         print('.', end="|", flush=True)
 
     def find_chapters(self, scraper, name):
@@ -118,8 +117,8 @@ class ChapterScraper(DataScraper):
         links = list(self.data[name]['Chapter Links'].items())
         with ThreadPoolExecutor(max_workers=8) as executor:
             executor.map(scraper.fetch_chapters, repeat(name), links)
-        save_data(self)
 
+        save_data(self)
         print('Chapters Scraped.')
         print(f"\nTotal Time Taken For Chapters:{time.time() - start_time}\n")
         return self.data[name]

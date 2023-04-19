@@ -44,7 +44,6 @@ class NovelScraper:
 
     def fetch_links(self, link):
         soup = make_request(link)
-
         self.save_links(soup, link)
 
     def update_chapter_links(self):

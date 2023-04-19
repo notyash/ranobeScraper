@@ -12,7 +12,6 @@ def undetected_request(link):
     options.headless = True
 
     driver = uc.Chrome(options=options)
-
     driver.get(link)
     driver.implicitly_wait(10)
     driver.find_element(uc.By.CSS_SELECTOR, value='div[style="cursor: pointer;"]').click()
@@ -25,6 +24,7 @@ def undetected_request(link):
 
 
 def make_request(link):
+
     post_body = {
         "cmd": "request.get",
         "url": link,
@@ -46,7 +46,11 @@ def make_request(link):
             print('Captcha Not Solved For Total Novel Pages!')
 
     else:
-        print('Request failed For Total Novel Pages!')
+        print(f'Request failed For {link}')
+        print('Trying again...')
+        make_request(link)
+
+
 
 
 def get_total_pages(novels, util):
