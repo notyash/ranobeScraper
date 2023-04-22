@@ -22,7 +22,7 @@ class DataScraper(NovelScraper):
 
     @staticmethod
     def get_title(soup):
-        title = soup.select_one('h1.title').get_text(strip=True).encode("ascii", "ignore").decode()
+        title = soup.select_one('h1.title span').get_text().encode("ascii", "ignore").decode()
         return title
 
     @staticmethod
